@@ -1,0 +1,22 @@
+{
+  "name": "create-hyact-app",
+  "version": "0.1.0",
+  "description": "A comprehensive React/Next.js enterprise framework boilerplate",
+  "main": "index.js",
+  "bin": {
+    "create-hyact-app": "./bin/cli.js"
+  },
+  "scripts": {
+    "test": "vitest"
+  },
+  "keywords": [
+    "react",
+    "nextjs",
+    "typescript",
+    "boilerplate",
+    "enterprise",
+    "framework"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
