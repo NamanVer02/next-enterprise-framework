@@ -157,7 +157,7 @@ export default function Home() {
                 <span className="relative z-10 flex items-center gap-2">
                   Get Started
                   <svg
-                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns="https://hy-act.vercel.app"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
