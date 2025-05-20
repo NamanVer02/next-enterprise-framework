@@ -130,7 +130,14 @@ try {
     "npm install -D @next/bundle-analyzer cross-env prettier eslint-config-prettier @typescript-eslint/eslint-plugin @typescript-eslint/parser",
     { stdio: "inherit" }
   );
-    } catch (error) {
+
+  // Install missing features
+  execSync("npm install swr @trpc/server @trpc/client @trpc/react-query", {
+    stdio: "inherit",
+  });
+  execSync("npm install -D playwright", { stdio: "inherit" });
+  execSync("npm install shadcn/ui", { stdio: "inherit" });
+} catch (error) {
   console.error("Failed to install dependencies");
   process.exit(1);
 }
@@ -175,6 +182,42 @@ directories.forEach((dir) => {
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, ".gitkeep"), "");
 });
+
+// Scaffold example files for missing features
+// SWR example
+fs.writeFileSync(
+  "src/hooks/useUser.ts",
+  `import useSWR from 'swr';\n\nexport function useUser(id: string) {\n  const { data, error, isLoading, mutate } = useSWR(id ? '/users/' + id : null, fetcher);\n  return { user: data, isLoading, error, mutate };\n}\n\nfunction fetcher(url: string) {\n  return fetch(url).then(res => res.json());\n}\n`
+);
+// tRPC example
+fs.writeFileSync(
+  "src/lib/api/trpc.ts",
+  `import { createTRPCReact } from '@trpc/react-query';\nimport type { AppRouter } from './server';\n\nexport const trpc = createTRPCReact<AppRouter>();\n`
+);
+// Playwright config example
+fs.writeFileSync(
+  "playwright.config.ts",
+  `import { defineConfig, devices } from '@playwright/test';\n\nexport default defineConfig({\n  projects: [\n    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },\n    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },\n    { name: 'webkit', use: { ...devices['Desktop Safari'] } },\n  ],\n});\n`
+);
+// React Context example
+fs.writeFileSync(
+  "src/contexts/ThemeContext.tsx",
+  `import { createContext, useContext, useState, ReactNode } from 'react';\n\ntype Theme = 'light' | 'dark';\ninterface ThemeContextType { theme: Theme; toggleTheme: () => void; }\nconst ThemeContext = createContext<ThemeContextType | undefined>(undefined);\nexport function ThemeProvider({ children }: { children: ReactNode }) {\n  const [theme, setTheme] = useState<Theme>('light');\n  const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');\n  return <ThemeContext.Provider value={{ theme, toggleTheme }}>{children}</ThemeContext.Provider>;\n}\nexport function useTheme() {\n  const context = useContext(ThemeContext);\n  if (!context) throw new Error('useTheme must be used within a ThemeProvider');\n  return context;\n}\n`
+);
+// Barrel file example
+fs.writeFileSync(
+  "src/components/ui/index.ts",
+  `export * from './Button';\nexport * from './Card';\nexport * from './Input';\n`
+);
+// Container/Presentational pattern example
+fs.writeFileSync(
+  "src/components/features/UserProfileContainer.tsx",
+  `import { UserProfile } from './UserProfile';\nimport { useUser } from '@/hooks/useUser';\n\nexport function UserProfileContainer({ userId }: { userId: string }) {\n  const { user, isLoading, error } = useUser(userId);\n  if (isLoading) return <div>Loading...</div>;\n  if (error) return <div>Error: {error.message}</div>;\n  return <UserProfile user={user} />;\n}\n`
+);
+fs.writeFileSync(
+  "src/components/features/UserProfile.tsx",
+  `interface UserProfileProps { user: any; }\nexport function UserProfile({ user }: UserProfileProps) {\n  return <div>{user?.name}</div>;\n}\n`
+);
 
 console.log("Project setup complete!");
 console.log(`
