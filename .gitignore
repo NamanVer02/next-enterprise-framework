@@ -30,5 +30,5 @@ yarn-error.log*
 *.swo
 
 # Test project directories
-/test-app
-/test-hyact 
+# /test-app
+# /test-hyact 

@@ -1,3 +1,4 @@
+import React from "react";
 import { Layout } from "../components/layout/layout";
 import {
   Card,
@@ -8,7 +9,18 @@ import {
 } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
-import Link from "next/link";
+
+// Since Next.js is now a dependency, we'll create a simple Link component
+interface LinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+  href: string;
+  children: React.ReactNode;
+}
+
+const Link: React.FC<LinkProps> = ({ href, children, ...props }) => (
+  <a href={href} {...props}>
+    {children}
+  </a>
+);
 
 type IconType = "code" | "lock" | "zap" | "refresh";
 
@@ -157,7 +169,7 @@ export default function Home() {
                 <span className="relative z-10 flex items-center gap-2">
                   Get Started
                   <svg
-                    xmlns="https://hy-act.vercel.app"
+                    xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
