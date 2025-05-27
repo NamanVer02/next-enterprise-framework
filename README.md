@@ -1,103 +1,71 @@
-# HyAct Enterprise Framework CLI
+# Create HyAct App
 
-<div align="center">
-  <p>A CLI tool for generating production-ready Next.js enterprise applications</p>
-  
-  [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-  [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6)](https://www.typescriptlang.org/)
-  [![Next.js](https://img.shields.io/badge/Next.js-15.x-000000)](https://nextjs.org/)
-</div>
+A CLI tool for creating Next.js applications with a comprehensive enterprise framework.
 
-## 📋 About
+## Features
 
-HyAct CLI tool provides a simple way to generate a comprehensive, production-ready Next.js enterprise application with all the features needed for modern web development.
+- Next.js App Router with TypeScript, ESLint, and Tailwind CSS
+- PocketBase integration for backend functionality
+- State management with Zustand, Jotai, and React Query
+- Form handling with React Hook Form and Zod
+- UI components with shadcn/ui style utilities
+- Internationalization with next-intl
+- Testing with Vitest and Playwright
 
-## 🚀 Features
-
-The generated application includes:
-
-- **Modern Stack** - Built with Next.js 15+, React 19, TypeScript 5, and Tailwind CSS
-- **App Router Ready** - Full support for Next.js App Router architecture
-- **Enterprise Project Structure** - Optimized folder organization for large codebases
-- **Type Safety** - End-to-end type safety with TypeScript and Zod
-- **Component Library** - Pre-built UI components with Radix UI and shadcn/ui
-- **State Management** - Multiple integrated solutions (Zustand, Jotai, React Query)
-- **Form Handling** - Type-safe forms with React Hook Form and Zod validation
-- **Authentication** - Complete auth system with NextAuth.js
-- **API Layer** - Structured API client with error handling
-- **Internationalization** - i18n support with next-intl
-- **Testing** - Unit, integration, and E2E testing setup
-- **Performance Optimization** - Built-in tools for analyzing and improving performance
-- **SEO Optimized** - SEO best practices with next-seo
-- **Progressive Web App** - PWA support with next-pwa
-- **CI/CD Ready** - Pre-configured for continuous integration
-
-## 🚦 Installation
-
-You can use the CLI directly with npx without installing it:
+## Usage
 
 ```bash
-npx create-hyact-app my-project
+# Using npx (recommended)
+npx create-hyact-app my-app
+
+# Or install globally
+npm install -g create-hyact-app
+create-hyact-app my-app
 ```
 
-This will create a new directory with all the necessary files and dependencies installed.
+## Project Structure
 
-## 📂 Generated Project Structure
-
-The generated project follows a well-organized folder structure:
+The CLI creates a new project with the following structure:
 
 ```
-src/
-├── app/              # App Router pages and layouts
-├── components/       # React components
-│   ├── ui/           # Base UI components
-│   ├── features/     # Feature-specific components
-│   ├── layout/       # Layout components
-│   ├── forms/        # Form components
-│   └── icons/        # Icon components
-├── hooks/            # Custom React hooks
-├── lib/              # Library code
-│   ├── api/          # API client & utilities
-│   ├── auth/         # Authentication utilities
-│   └── validation/   # Schema validation
-├── services/         # Service layer
-├── stores/           # State management stores
-├── types/            # TypeScript type definitions
-├── utils/            # Utility functions
-├── contexts/         # React contexts
-├── config/           # Configuration files
-├── middleware/       # Next.js middleware
-├── i18n/             # Internationalization
-└── theme/            # Theme configuration
+my-app/
+├── pocketbase-server/    # PocketBase backend
+├── public/               # Static assets
+├── scripts/              # Utility scripts
+├── src/
+│   ├── app/              # Next.js App Router
+│   ├── components/       # React components
+│   ├── hooks/            # Custom React hooks
+│   ├── lib/              # Utility libraries
+│   └── ...               # Other directories for organization
+└── ...
 ```
 
-## 💻 CLI Usage
+## Getting Started
 
-The CLI tool currently supports creating a new project:
+After creating your project:
 
-```bash
-npx create-hyact-app [project-name]
-```
+1. Navigate to your project directory:
 
-Options:
-- `project-name`: The name of the directory where the project will be created (required)
+   ```bash
+   cd my-app
+   ```
 
-## 🤝 Contributing
+2. Start the development server:
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+   ```bash
+   npm run dev
+   ```
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+3. Start PocketBase:
 
-## 📄 License
+   ```bash
+   npm run pocketbase
+   ```
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+4. Access your application at [http://localhost:3000](http://localhost:3000)
+5. Access PocketBase admin at [http://127.0.0.1:8090/\_/](http://127.0.0.1:8090/_/)
 
----
+## License
 
-<div align="center">
-  <p>Made with ❤️ by the HyAct Team</p>
-</div> 
+MIT
