@@ -1,6 +1,6 @@
 {
   "name": "create-hyact-website",
-  "version": "0.1.0",
+  "version": "0.1.3",
   "description": "Create full-stack automotive websites with Aurora GT-S car showcase and Strapi CMS integration",
   "main": "index.js",
   "bin": {

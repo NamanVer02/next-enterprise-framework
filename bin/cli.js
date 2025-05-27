@@ -31,7 +31,7 @@ console.log("Setting up frontend (Next.js)...");
 // Create Next.js app in frontend folder
 try {
   execSync(
-    `npx create-next-app@latest frontend --typescript --eslint --tailwind --app --src-dir`,
+    `npx create-next-app@latest frontend --typescript --eslint --tailwind --app --src-dir --yes`,
     { stdio: "inherit" }
   );
 } catch (error) {
@@ -117,9 +117,35 @@ tsconfig.compilerOptions.paths = {
 };
 fs.writeFileSync(tsconfigPath, JSON.stringify(tsconfig, null, 2));
 
+// Create next.config.js to allow external images from Unsplash
+const nextConfigContent = `/** @type {import('next').NextConfig} */
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+  },
+};
+
+module.exports = nextConfig;
+`;
+
+fs.writeFileSync(
+  path.join(process.cwd(), "frontend/next.config.js"),
+  nextConfigContent
+);
+
 // Create simplified car page content that only uses basic Next.js dependencies
 const createSimplifiedCarPage = () => {
-  return `export default function HomePage() {
+  return `/* eslint-disable react/no-unescaped-entities */
+import Image from 'next/image';
+
+export default function HomePage() {
   const features = [
     {
       title: "Tri-Motor Powertrain",
@@ -215,19 +241,19 @@ const createSimplifiedCarPage = () => {
       name: "James Morrison",
       role: "Automotive Journalist, Motor Trend",
       image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
-      quote: "The Aurora GT-S doesn't just redefine electric performance—it obliterates every preconception about what an EV can be. This is automotive nirvana."
+      quote: "The Aurora GT-S doesn&apos;t just redefine electric performance—it obliterates every preconception about what an EV can be. This is automotive nirvana."
     },
     {
       name: "Dr. Sarah Chen",
       role: "Technology Executive, Former Tesla",
       image: "https://images.unsplash.com/photo-1494790108755-2616b612b932?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
-      quote: "After two decades in automotive technology, the Aurora GT-S represents the single greatest leap forward I've witnessed. The integration is flawless."
+      quote: "After two decades in automotive technology, the Aurora GT-S represents the single greatest leap forward I&apos;ve witnessed. The integration is flawless."
     },
     {
       name: "Michael Rodriguez",
       role: "Professional Racing Driver, Formula E",
       image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
-      quote: "In 15 years of professional racing, nothing has prepared me for the Aurora GT-S. The precision, the power, the control—it's in a league of its own."
+      quote: "In 15 years of professional racing, nothing has prepared me for the Aurora GT-S. The precision, the power, the control—it&apos;s in a league of its own."
     }
   ];
 
@@ -390,9 +416,11 @@ const createSimplifiedCarPage = () => {
               </div>
             </div>
             <div className="relative">
-              <img 
+              <Image 
                 src="https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                 alt="Aurora GT-S Interior"
+                width={800}
+                height={600}
                 className="rounded-lg shadow-2xl"
               />
             </div>
@@ -476,9 +504,11 @@ const createSimplifiedCarPage = () => {
             {testimonials.map((testimonial, index) => (
               <div key={index} className="bg-gray-50 p-8 rounded-xl">
                 <div className="flex items-center mb-6">
-                  <img 
+                  <Image 
                     src={testimonial.image} 
                     alt={testimonial.name}
+                    width={64}
+                    height={64}
                     className="w-16 h-16 rounded-full object-cover mr-4"
                   />
                   <div>
@@ -512,9 +542,11 @@ const createSimplifiedCarPage = () => {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {galleryImages.map((image, index) => (
               <div key={index} className="group relative overflow-hidden rounded-lg shadow-lg">
-                <img 
+                <Image 
                   src={image.url} 
                   alt={image.title}
+                  width={400}
+                  height={256}
                   className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-300"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
