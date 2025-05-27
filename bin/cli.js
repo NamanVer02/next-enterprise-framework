@@ -15,11 +15,11 @@ const projectName = process.argv[2];
 
 if (!projectName) {
   console.error("Please provide a project name");
-  console.log("Example: npx create-hyact-app my-app");
+  console.log("Example: npx create-hyact-website my-website");
   process.exit(1);
 }
 
-console.log(`Creating a new HyAct App in ${projectName}...`);
+console.log(`Creating a new HyAct Website in ${projectName}...`);
 
 // Create Next.js app with TypeScript, ESLint, and Tailwind
 try {
@@ -615,7 +615,7 @@ Next steps:
 1. cd ${projectName}
 2. npm run dev
 
-Your HyAct App with the Aurora GT-S car showcase is ready!
+Your HyAct Website with the Aurora GT-S car showcase is ready!
 Visit http://localhost:3000 to see your car page.
 The page uses only basic Next.js dependencies and Tailwind CSS.
 `);
