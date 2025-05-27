@@ -1,7 +1,7 @@
 {
   "name": "create-hyact-website",
   "version": "0.1.0",
-  "description": "Create professional automotive websites with the Aurora GT-S car showcase template",
+  "description": "Create full-stack automotive websites with Aurora GT-S car showcase and Strapi CMS integration",
   "main": "index.js",
   "bin": {
     "create-hyact-website": "./bin/cli.js"
@@ -13,6 +13,9 @@
     "react",
     "nextjs",
     "typescript",
+    "strapi",
+    "cms",
+    "fullstack",
     "automotive",
     "website",
     "car",

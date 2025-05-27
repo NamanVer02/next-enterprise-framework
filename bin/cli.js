@@ -19,12 +19,19 @@ if (!projectName) {
   process.exit(1);
 }
 
-console.log(`Creating a new HyAct Website in ${projectName}...`);
+console.log(
+  `Creating a new HyAct Website with Strapi CMS in ${projectName}...`
+);
 
-// Create Next.js app with TypeScript, ESLint, and Tailwind
+// Create main project directory
+fs.mkdirSync(projectName, { recursive: true });
+process.chdir(path.resolve(projectName));
+
+console.log("Setting up frontend (Next.js)...");
+// Create Next.js app in frontend folder
 try {
   execSync(
-    `npx create-next-app@latest ${projectName} --typescript --eslint --tailwind --app --src-dir`,
+    `npx create-next-app@latest frontend --typescript --eslint --tailwind --app --src-dir`,
     { stdio: "inherit" }
   );
 } catch (error) {
@@ -32,11 +39,78 @@ try {
   process.exit(1);
 }
 
-// Change directory to the new project
-process.chdir(path.resolve(projectName));
+console.log("Setting up backend (Strapi CMS)...");
+// Create Strapi app in backend folder
+try {
+  execSync(`npx create-strapi-app@latest backend --quickstart --no-run`, {
+    stdio: "inherit",
+  });
+} catch (error) {
+  console.error(
+    "Failed to create Strapi app - this might be due to Node.js version compatibility"
+  );
+  console.log("Creating manual backend setup...");
 
-// Update tsconfig.json to include path aliases
-const tsconfigPath = path.resolve(process.cwd(), "tsconfig.json");
+  // Create basic backend folder structure if Strapi installation fails
+  const backendDirs = [
+    "backend",
+    "backend/config",
+    "backend/src",
+    "backend/src/api",
+  ];
+
+  backendDirs.forEach((dir) => {
+    fs.mkdirSync(dir, { recursive: true });
+  });
+
+  // Create a basic package.json for backend
+  const backendPackageJson = {
+    name: "backend",
+    private: true,
+    version: "0.1.0",
+    description: "Strapi CMS backend for Aurora GT-S showcase",
+    scripts: {
+      develop: "strapi develop",
+      start: "strapi start",
+      build: "strapi build",
+      strapi: "strapi",
+    },
+    dependencies: {
+      "@strapi/strapi": "5.13.1",
+      "@strapi/plugin-users-permissions": "5.13.1",
+      "@strapi/plugin-upload": "5.13.1",
+    },
+    engines: {
+      node: ">=18.0.0 <=22.x.x",
+      npm: ">=6.0.0",
+    },
+  };
+
+  fs.writeFileSync(
+    path.join(process.cwd(), "backend/package.json"),
+    JSON.stringify(backendPackageJson, null, 2)
+  );
+
+  // Create basic server.js
+  const serverContent = `const strapi = require('@strapi/strapi');
+
+const app = strapi({
+  name: 'backend',
+  favicon: '/favicon.ico',
+  url: 'http://localhost:1337',
+});
+
+app.start();
+`;
+
+  fs.writeFileSync(
+    path.join(process.cwd(), "backend/server.js"),
+    serverContent
+  );
+}
+
+// Update frontend tsconfig.json to include path aliases
+const tsconfigPath = path.resolve(process.cwd(), "frontend/tsconfig.json");
 const tsconfig = JSON.parse(fs.readFileSync(tsconfigPath, "utf8"));
 tsconfig.compilerOptions.paths = {
   "@/*": ["./src/*"],
@@ -574,15 +648,15 @@ const createSimplifiedCarPage = () => {
 }`;
 };
 
-// Copy template files
+// Copy template files to frontend
 console.log("Creating car showcase page...");
 try {
   // Create the simplified car page
   const carPageContent = createSimplifiedCarPage();
 
-  // Write to Next.js app directory
+  // Write to Next.js frontend app directory
   fs.writeFileSync(
-    path.join(process.cwd(), "src/app/page.tsx"),
+    path.join(process.cwd(), "frontend/src/app/page.tsx"),
     carPageContent
   );
 
@@ -592,32 +666,257 @@ try {
   process.exit(1);
 }
 
-// Create additional project structure
-console.log("Setting up project structure...");
-const additionalDirectories = [
-  "src/components",
-  "src/types",
-  "src/utils",
-  "src/contexts",
-  "src/config",
-  "public/images",
-  "public/icons",
+// Create additional frontend structure
+console.log("Setting up frontend structure...");
+const frontendDirectories = [
+  "frontend/src/components",
+  "frontend/src/types",
+  "frontend/src/utils",
+  "frontend/src/contexts",
+  "frontend/src/config",
+  "frontend/src/lib",
+  "frontend/public/images",
+  "frontend/public/icons",
 ];
 
-additionalDirectories.forEach((dir) => {
+frontendDirectories.forEach((dir) => {
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, ".gitkeep"), "");
 });
 
-console.log("Project setup complete!");
+// Setup Strapi integration
+console.log("Setting up Strapi CMS integration...");
+setupStrapiIntegration();
+
+// Function to setup Strapi integration
+function setupStrapiIntegration() {
+  // Install axios for API calls in frontend
+  try {
+    process.chdir("frontend");
+    execSync("npm install axios", { stdio: "inherit" });
+    process.chdir("..");
+  } catch (error) {
+    console.error("Failed to install axios in frontend");
+  }
+
+  // Create Strapi API client
+  const apiClientContent = `import axios from 'axios';
+
+const API_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337';
+
+const strapiApi = axios.create({
+  baseURL: \`\${API_URL}/api\`,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add auth token if available
+strapiApi.interceptors.request.use((config) => {
+  const token = localStorage.getItem('jwt');
+  if (token) {
+    config.headers.Authorization = \`Bearer \${token}\`;
+  }
+  return config;
+});
+
+export default strapiApi;
+
+// API functions for Aurora GT-S data
+export const carsApi = {
+  // Get all cars
+  getCars: () => strapiApi.get('/cars?populate=*'),
+  
+  // Get single car
+  getCar: (id: string) => strapiApi.get(\`/cars/\${id}?populate=*\`),
+  
+  // Get features
+  getFeatures: () => strapiApi.get('/features?populate=*'),
+  
+  // Get testimonials
+  getTestimonials: () => strapiApi.get('/testimonials?populate=*'),
+  
+  // Get pricing packages
+  getPricingPackages: () => strapiApi.get('/pricing-packages?populate=*'),
+};
+`;
+
+  fs.writeFileSync(
+    path.join(process.cwd(), "frontend/src/lib/strapi.ts"),
+    apiClientContent
+  );
+
+  // Create environment file for frontend
+  const envContent = `# Strapi CMS Configuration
+NEXT_PUBLIC_STRAPI_URL=http://localhost:1337
+`;
+
+  fs.writeFileSync(path.join(process.cwd(), "frontend/.env.local"), envContent);
+
+  // Create root package.json for managing both apps
+  const rootPackageJson = {
+    name: projectName,
+    private: true,
+    scripts: {
+      dev: 'concurrently "npm run dev:frontend" "npm run dev:backend"',
+      "dev:frontend": "cd frontend && npm run dev",
+      "dev:backend": "cd backend && npm run develop",
+      build: "npm run build:frontend",
+      "build:frontend": "cd frontend && npm run build",
+      start: "npm run start:frontend",
+      "start:frontend": "cd frontend && npm run start",
+    },
+    devDependencies: {
+      concurrently: "^8.2.2",
+    },
+  };
+
+  fs.writeFileSync(
+    path.join(process.cwd(), "package.json"),
+    JSON.stringify(rootPackageJson, null, 2)
+  );
+
+  // Install concurrently for running both apps
+  try {
+    execSync("npm install", { stdio: "inherit" });
+  } catch (error) {
+    console.error("Failed to install concurrently");
+  }
+
+  // Create README for the project
+  const readmeContent = `# ${projectName}
+
+A full-stack automotive website with Aurora GT-S showcase powered by Next.js and Strapi CMS.
+
+## Project Structure
+
+\`\`\`
+${projectName}/
+├── frontend/          # Next.js frontend application
+│   ├── src/
+│   │   ├── app/       # App Router pages
+│   │   ├── components/ # React components
+│   │   └── lib/       # API client and utilities
+│   └── package.json
+├── backend/           # Strapi CMS backend
+│   ├── src/
+│   │   └── api/       # API routes and controllers
+│   ├── config/        # Strapi configuration
+│   └── package.json
+└── package.json       # Root package.json for scripts
+\`\`\`
+
+## Quick Start
+
+1. **Start both applications:**
+   \`\`\`bash
+   npm run dev
+   \`\`\`
+
+2. **Access the applications:**
+   - Frontend: http://localhost:3000
+   - Strapi Admin: http://localhost:1337/admin
+
+3. **First-time Strapi setup:**
+   - Visit http://localhost:1337/admin
+   - Create your admin account
+   - Configure your content types
+
+## Content Types to Create in Strapi
+
+To make the Aurora GT-S showcase dynamic, create these content types in Strapi:
+
+### 1. Car
+- \`name\` (Text)
+- \`description\` (Rich Text)
+- \`price\` (Number)
+- \`image\` (Media)
+- \`specifications\` (JSON)
+
+### 2. Feature
+- \`title\` (Text)
+- \`description\` (Text)
+- \`icon\` (Text)
+
+### 3. Testimonial
+- \`name\` (Text)
+- \`role\` (Text)
+- \`quote\` (Text)
+- \`image\` (Media)
+- \`rating\` (Number)
+
+### 4. Pricing Package
+- \`name\` (Text)
+- \`price\` (Text)
+- \`description\` (Text)
+- \`features\` (JSON)
+- \`popular\` (Boolean)
+
+## Development Commands
+
+- \`npm run dev\` - Start both frontend and backend
+- \`npm run dev:frontend\` - Start only frontend
+- \`npm run dev:backend\` - Start only backend
+- \`npm run build\` - Build frontend for production
+
+## Environment Variables
+
+### Frontend (.env.local)
+\`\`\`
+NEXT_PUBLIC_STRAPI_URL=http://localhost:1337
+\`\`\`
+
+## Node.js Compatibility
+
+⚠️ **Important**: Strapi requires Node.js >=18.0.0 <=22.x.x
+
+If you're using Node.js v23 or higher:
+1. Install nvm: \`curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash\`
+2. Switch to Node.js 22: \`nvm install 22 && nvm use 22\`
+3. Install backend dependencies: \`cd backend && npm install\`
+
+## Troubleshooting
+
+- **Strapi installation fails**: This is usually due to Node.js version compatibility
+- **Frontend works but backend doesn't**: Check Node.js version and install backend dependencies manually
+- **API calls fail**: Ensure Strapi is running on http://localhost:1337
+
+Enjoy building your automotive showcase website! 🚗
+`;
+
+  fs.writeFileSync(path.join(process.cwd(), "README.md"), readmeContent);
+}
+
+console.log("Full-stack setup complete!");
 console.log(`
-Next steps:
+🎉 Your HyAct Website with Strapi CMS is ready!
+
+📁 Project Structure:
+   ${projectName}/
+   ├── frontend/     # Next.js app (Aurora GT-S showcase)
+   ├── backend/      # Strapi CMS
+   └── package.json  # Root scripts
+
+🚀 Quick Start:
 1. cd ${projectName}
 2. npm run dev
 
-Your HyAct Website with the Aurora GT-S car showcase is ready!
-Visit http://localhost:3000 to see your car page.
-The page uses only basic Next.js dependencies and Tailwind CSS.
+🌐 Access your applications:
+   - Frontend: http://localhost:3000
+   - Strapi Admin: http://localhost:1337/admin
+
+📝 Next Steps:
+   - Set up your Strapi admin account
+   - Create content types for dynamic data
+   - Customize the Aurora GT-S showcase
+   - Check README.md for detailed instructions
+
+⚠️  Node.js Compatibility:
+   - Strapi requires Node.js >=18.0.0 <=22.x.x
+   - If you're using Node.js v23+, install backend dependencies manually
+   - Consider using nvm to switch Node versions: nvm use 22
+
+Happy coding! 🚗✨
 `);
 
 rl.close();
