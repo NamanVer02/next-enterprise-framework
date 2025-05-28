@@ -4,6 +4,50 @@ const { execSync } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 const readline = require("readline");
+const process = require("process");
+
+// Function to check Node.js version compatibility with Strapi requirements
+function checkNodeVersion() {
+  const currentVersion = process.version;
+  const versionNumber = currentVersion.slice(1); // Remove the 'v' prefix
+  const majorVersion = parseInt(versionNumber.split(".")[0], 10);
+
+  // Strapi requires Node.js >=18.0.0 <=22.x.x
+  if (majorVersion < 18 || majorVersion > 22) {
+    console.error(`
+⚠️  Node.js Version Error ⚠️
+You are running Node.js ${currentVersion}
+Strapi requires Node.js >=18.0.0 <=22.x.x
+
+Please install a compatible Node.js version to use create-hyact-app.
+Suggestion: Install nvm (Node Version Manager) and run:
+  nvm install 22
+  nvm use 22
+  npx create-hyact-website my-website
+`);
+    return false;
+  }
+  return true;
+}
+
+// Function to clean up project directory if creation needs to be aborted
+function cleanupProjectDirectory(projectPath) {
+  console.log(`Cleaning up and removing directory: ${projectPath}`);
+  try {
+    // Use rimraf-like recursive deletion
+    if (fs.existsSync(projectPath)) {
+      // Go back to parent directory before deleting
+      process.chdir(path.dirname(projectPath));
+      fs.rmSync(projectPath, { recursive: true, force: true });
+      console.log(
+        "Cleanup completed successfully. Please try again with a compatible Node.js version."
+      );
+    }
+  } catch (error) {
+    console.error(`Failed to clean up directory: ${error.message}`);
+    console.log(`Please manually remove the directory: ${projectPath}`);
+  }
+}
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -19,13 +63,21 @@ if (!projectName) {
   process.exit(1);
 }
 
+// Check Node.js version compatibility before proceeding
+if (!checkNodeVersion()) {
+  process.exit(1);
+}
+
 console.log(
   `Creating a new HyAct Website with Strapi CMS in ${projectName}...`
 );
 
+// Store the absolute path to the project directory for potential cleanup
+const projectPath = path.resolve(process.cwd(), projectName);
+
 // Create main project directory
 fs.mkdirSync(projectName, { recursive: true });
-process.chdir(path.resolve(projectName));
+process.chdir(projectPath);
 
 console.log("Setting up frontend (Next.js)...");
 // Create Next.js app in frontend folder
@@ -36,11 +88,14 @@ try {
   );
 } catch (error) {
   console.error("Failed to create Next.js app");
+  cleanupProjectDirectory(projectPath);
   process.exit(1);
 }
 
 console.log("Setting up backend (Strapi CMS)...");
 // Create Strapi app in backend folder
+let usingManualBackend = false;
+
 try {
   execSync(`npx create-strapi-app@latest backend --quickstart --no-run`, {
     stdio: "inherit",
@@ -49,7 +104,18 @@ try {
   console.error(
     "Failed to create Strapi app - this might be due to Node.js version compatibility"
   );
+
+  // Check if it's a Node.js version issue
+  if (!checkNodeVersion()) {
+    console.error(
+      "Detected incompatible Node.js version. Aborting project creation."
+    );
+    cleanupProjectDirectory(projectPath);
+    process.exit(1);
+  }
+
   console.log("Creating manual backend setup...");
+  usingManualBackend = true;
 
   // Create basic backend folder structure if Strapi installation fails
   const backendDirs = [
@@ -107,6 +173,18 @@ app.start();
     path.join(process.cwd(), "backend/server.js"),
     serverContent
   );
+}
+
+// Verify Node.js version compatibility again before proceeding with Strapi-related setup
+if (usingManualBackend && !checkNodeVersion()) {
+  console.error(
+    "Manual backend setup was created, but Node.js version is still incompatible."
+  );
+  console.error(
+    "Aborting project creation. Please use a compatible Node.js version (>=18.0.0 <=22.x.x)."
+  );
+  cleanupProjectDirectory(projectPath);
+  process.exit(1);
 }
 
 // Update frontend tsconfig.json to include path aliases
@@ -720,8 +798,255 @@ frontendDirectories.forEach((dir) => {
 console.log("Setting up Strapi CMS integration...");
 setupStrapiIntegration();
 
+// Implement enhanceFrontendStructure with directories and example files from old-cli.js
+function enhanceFrontendStructure() {
+  console.log("Setting up enhanced frontend structure...");
+
+  // Create all directories from old-cli.js
+  const enhancedDirectories = [
+    "frontend/src/components/ui",
+    "frontend/src/components/features",
+    "frontend/src/components/layout",
+    "frontend/src/components/icons",
+    "frontend/src/components/forms",
+    "frontend/src/hooks",
+    "frontend/src/lib/validation",
+    "frontend/src/lib/auth",
+    "frontend/src/lib/api",
+    "frontend/src/services",
+    "frontend/src/stores",
+    "frontend/src/utils/helpers",
+    "frontend/src/utils/formatters",
+    "frontend/src/middleware",
+    "frontend/src/i18n",
+    "frontend/src/theme",
+    "frontend/public/locales",
+    "frontend/public/locales/en",
+    "frontend/public/locales/es",
+    "frontend/public/fonts",
+    "frontend/tests/unit",
+    "frontend/tests/integration",
+    "frontend/tests/e2e",
+    "frontend/tests/mocks",
+  ];
+
+  enhancedDirectories.forEach((dir) => {
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, ".gitkeep"), "");
+  });
+
+  // Install additional dependencies for enhanced structure
+  try {
+    console.log("Installing additional dependencies...");
+    process.chdir("frontend");
+
+    // Core dependencies
+    execSync(
+      "npm install zustand @tanstack/react-query zod react-hook-form @hookform/resolvers date-fns",
+      { stdio: "inherit" }
+    );
+
+    // State management - enhanced
+    execSync("npm install jotai immer @tanstack/react-query-devtools", {
+      stdio: "inherit",
+    });
+
+    // UI components and styling
+    execSync(
+      "npm install class-variance-authority tailwind-merge clsx @radix-ui/react-slot",
+      { stdio: "inherit" }
+    );
+
+    // Form and validation - enhanced
+    execSync("npm install @hookform/error-message", { stdio: "inherit" });
+
+    // Internationalization
+    execSync("npm install next-intl next-i18n-router", { stdio: "inherit" });
+
+    // Auth and security
+    execSync("npm install next-auth @auth/core iron-session", {
+      stdio: "inherit",
+    });
+
+    // Performance and PWA
+    execSync("npm install next-pwa sharp", { stdio: "inherit" });
+
+    // SEO and analytics
+    execSync("npm install schema-dts next-sitemap next-seo", {
+      stdio: "inherit",
+    });
+
+    // Testing dependencies
+    execSync(
+      "npm install -D vitest @testing-library/react @testing-library/jest-dom @vitejs/plugin-react jsdom @testing-library/user-event msw",
+      { stdio: "inherit" }
+    );
+
+    // Development tools
+    execSync(
+      "npm install -D @next/bundle-analyzer cross-env prettier eslint-config-prettier @typescript-eslint/eslint-plugin @typescript-eslint/parser",
+      { stdio: "inherit" }
+    );
+
+    // Install missing features
+    execSync("npm install swr @trpc/server @trpc/client @trpc/react-query", {
+      stdio: "inherit",
+    });
+    execSync("npm install -D playwright", { stdio: "inherit" });
+
+    process.chdir("..");
+    console.log("Dependencies installed successfully!");
+  } catch (error) {
+    console.error("Failed to install some dependencies", error);
+    console.log("Continuing with setup...");
+    // Make sure we're back in the project root directory
+    try {
+      process.chdir(projectPath);
+    } catch (err) {
+      // Already in the right directory, ignore
+    }
+  }
+
+  // Create example files
+  console.log("Creating example files...");
+
+  // SWR example
+  fs.writeFileSync(
+    "frontend/src/hooks/useUser.ts",
+    `import useSWR from 'swr';\n\nexport function useUser(id: string) {\n  const { data, error, isLoading, mutate } = useSWR(id ? '/users/' + id : null, fetcher);\n  return { user: data, isLoading, error, mutate };\n}\n\nfunction fetcher(url: string) {\n  return fetch(url).then(res => res.json());\n}\n`
+  );
+
+  // tRPC example
+  fs.writeFileSync(
+    "frontend/src/lib/api/trpc.ts",
+    `import { createTRPCReact } from '@trpc/react-query';\nimport type { AppRouter } from './server';\n\nexport const trpc = createTRPCReact<AppRouter>();\n`
+  );
+
+  // Playwright config example
+  fs.writeFileSync(
+    "frontend/playwright.config.ts",
+    `import { defineConfig, devices } from '@playwright/test';\n\nexport default defineConfig({\n  projects: [\n    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },\n    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },\n    { name: 'webkit', use: { ...devices['Desktop Safari'] } },\n  ],\n});\n`
+  );
+
+  // React Context example
+  fs.writeFileSync(
+    "frontend/src/contexts/ThemeContext.tsx",
+    `import { createContext, useContext, useState, ReactNode } from 'react';\n\ntype Theme = 'light' | 'dark';\ninterface ThemeContextType { theme: Theme; toggleTheme: () => void; }\nconst ThemeContext = createContext<ThemeContextType | undefined>(undefined);\nexport function ThemeProvider({ children }: { children: ReactNode }) {\n  const [theme, setTheme] = useState<Theme>('light');\n  const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');\n  return <ThemeContext.Provider value={{ theme, toggleTheme }}>{children}</ThemeContext.Provider>;\n}\nexport function useTheme() {\n  const context = useContext(ThemeContext);\n  if (!context) throw new Error('useTheme must be used within a ThemeProvider');\n  return context;\n}\n`
+  );
+
+  // Barrel file example
+  fs.writeFileSync(
+    "frontend/src/components/ui/index.ts",
+    `export * from './Button';\nexport * from './Card';\nexport * from './Input';\n`
+  );
+
+  // Container/Presentational pattern example
+  fs.writeFileSync(
+    "frontend/src/components/features/UserProfileContainer.tsx",
+    `import { UserProfile } from './UserProfile';\nimport { useUser } from '@/hooks/useUser';\n\nexport function UserProfileContainer({ userId }: { userId: string }) {\n  const { user, isLoading, error } = useUser(userId);\n  if (isLoading) return <div>Loading...</div>;\n  if (error) return <div>Error: {error.message}</div>;\n  return <UserProfile user={user} />;\n}\n`
+  );
+
+  fs.writeFileSync(
+    "frontend/src/components/features/UserProfile.tsx",
+    `interface UserProfileProps { user: any; }\nexport function UserProfile({ user }: UserProfileProps) {\n  return <div>{user?.name}</div>;\n}\n`
+  );
+
+  // Create empty UI components
+  fs.writeFileSync(
+    "frontend/src/components/ui/Button.tsx",
+    `import { ButtonHTMLAttributes, forwardRef } from 'react';\nimport { cva, type VariantProps } from 'class-variance-authority';\nimport { cn } from '@/lib/utils';\n\nconst buttonVariants = cva(\n  'inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',\n  {\n    variants: {\n      variant: {\n        default: 'bg-slate-900 text-white hover:bg-slate-900/90',\n        destructive: 'bg-red-500 text-white hover:bg-red-500/90',\n        outline: 'border border-slate-200 bg-white hover:bg-slate-100 hover:text-slate-900',\n        secondary: 'bg-slate-100 text-slate-900 hover:bg-slate-100/80',\n        ghost: 'hover:bg-slate-100 hover:text-slate-900',\n        link: 'text-slate-900 underline-offset-4 hover:underline',\n      },\n      size: {\n        default: 'h-10 px-4 py-2',\n        sm: 'h-9 rounded-md px-3',\n        lg: 'h-11 rounded-md px-8',\n        icon: 'h-10 w-10',\n      },\n    },\n    defaultVariants: {\n      variant: 'default',\n      size: 'default',\n    },\n  }\n);\n\nexport interface ButtonProps\n  extends ButtonHTMLAttributes<HTMLButtonElement>,\n    VariantProps<typeof buttonVariants> {}\n\nconst Button = forwardRef<HTMLButtonElement, ButtonProps>((\n  { className, variant, size, ...props },\n  ref\n) => {\n  return (\n    <button\n      className={cn(buttonVariants({ variant, size, className }))}\n      ref={ref}\n      {...props}\n    />\n  );\n});\nButton.displayName = 'Button';\n\nexport { Button, buttonVariants };\n`
+  );
+
+  fs.writeFileSync(
+    "frontend/src/components/ui/Card.tsx",
+    `import { HTMLAttributes, forwardRef } from 'react';\nimport { cn } from '@/lib/utils';\n\nconst Card = forwardRef<\n  HTMLDivElement,\n  HTMLAttributes<HTMLDivElement>\n>(({ className, ...props }, ref) => (\n  <div\n    ref={ref}\n    className={cn(\n      'rounded-lg border border-slate-200 bg-white text-slate-950 shadow-sm',\n      className\n    )}\n    {...props}\n  />\n));\nCard.displayName = 'Card';\n\nconst CardHeader = forwardRef<\n  HTMLDivElement,\n  HTMLAttributes<HTMLDivElement>\n>(({ className, ...props }, ref) => (\n  <div\n    ref={ref}\n    className={cn('flex flex-col space-y-1.5 p-6', className)}\n    {...props}\n  />\n));\nCardHeader.displayName = 'CardHeader';\n\nconst CardTitle = forwardRef<\n  HTMLParagraphElement,\n  HTMLAttributes<HTMLHeadingElement>\n>(({ className, ...props }, ref) => (\n  <h3\n    ref={ref}\n    className={cn(\n      'text-2xl font-semibold leading-none tracking-tight',\n      className\n    )}\n    {...props}\n  />\n));\nCardTitle.displayName = 'CardTitle';\n\nconst CardDescription = forwardRef<\n  HTMLParagraphElement,\n  HTMLAttributes<HTMLParagraphElement>\n>(({ className, ...props }, ref) => (\n  <p\n    ref={ref}\n    className={cn('text-sm text-slate-500', className)}\n    {...props}\n  />\n));\nCardDescription.displayName = 'CardDescription';\n\nconst CardContent = forwardRef<\n  HTMLDivElement,\n  HTMLAttributes<HTMLDivElement>\n>(({ className, ...props }, ref) => (\n  <div ref={ref} className={cn('p-6 pt-0', className)} {...props} />\n));\nCardContent.displayName = 'CardContent';\n\nconst CardFooter = forwardRef<\n  HTMLDivElement,\n  HTMLAttributes<HTMLDivElement>\n>(({ className, ...props }, ref) => (\n  <div\n    ref={ref}\n    className={cn('flex items-center p-6 pt-0', className)}\n    {...props}\n  />\n));\nCardFooter.displayName = 'CardFooter';\n\nexport { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };\n`
+  );
+
+  fs.writeFileSync(
+    "frontend/src/components/ui/Input.tsx",
+    `import { InputHTMLAttributes, forwardRef } from 'react';\nimport { cn } from '@/lib/utils';\n\nexport interface InputProps\n  extends InputHTMLAttributes<HTMLInputElement> {}\n\nconst Input = forwardRef<HTMLInputElement, InputProps>((\n  { className, type, ...props },\n  ref\n) => {\n  return (\n    <input\n      type={type}\n      className={cn(\n        'flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',\n        className\n      )}\n      ref={ref}\n      {...props}\n    />\n  );\n});\nInput.displayName = 'Input';\n\nexport { Input };\n`
+  );
+
+  // Create utils file
+  fs.writeFileSync(
+    "frontend/src/lib/utils.ts",
+    `import { type ClassValue, clsx } from 'clsx';\nimport { twMerge } from 'tailwind-merge';\n\nexport function cn(...inputs: ClassValue[]) {\n  return twMerge(clsx(inputs));\n}\n\nexport function formatDate(date: Date) {\n  return date.toLocaleDateString('en-US', {\n    day: 'numeric',\n    month: 'long',\n    year: 'numeric',\n  });\n}\n\nexport function formatPrice(price: number) {\n  return new Intl.NumberFormat('en-US', {\n    style: 'currency',\n    currency: 'USD',\n  }).format(price);\n}\n`
+  );
+
+  console.log("Enhanced frontend structure completed!");
+}
+
+// Now call the enhanceFrontendStructure function
+console.log("Setting up enhanced frontend structure...");
+enhanceFrontendStructure();
+
+console.log("Full-stack setup complete!");
+console.log(`
+🎉 Your HyAct Website with Strapi CMS is ready!
+
+📁 Project Structure:
+   ${projectName}/
+   ├── frontend/     # Next.js app (Aurora GT-S showcase)
+   │   ├── src/
+   │   │   ├── app/            # Next.js App Router pages
+   │   │   ├── components/     # React components (UI, features, layout)
+   │   │   ├── contexts/       # React contexts (including ThemeContext)
+   │   │   ├── hooks/          # Custom React hooks
+   │   │   ├── lib/            # Utilities and API clients
+   │   │   ├── types/          # TypeScript type definitions
+   │   │   └── utils/          # Helper functions
+   │   ├── public/             # Static assets
+   │   └── tests/              # Test files (unit, integration, e2e)
+   ├── backend/      # Strapi CMS
+   │   ├── src/
+   │   │   └── api/  # API routes and controllers
+   │   └── config/   # Strapi configuration
+   └── package.json  # Root scripts
+
+🚀 Quick Start:
+1. cd ${projectName}
+2. npm run dev
+
+🌐 Access your applications:
+   - Frontend: http://localhost:3000
+   - Strapi Admin: http://localhost:1337/admin
+
+📝 Next Steps:
+   - Set up your Strapi admin account
+   - Create content types for dynamic data
+   - Customize the Aurora GT-S showcase
+   - Check README.md for detailed instructions
+
+⚠️  Node.js Compatibility:
+   - Strapi REQUIRES Node.js >=18.0.0 <=22.x.x
+   - Running with Node.js v23+ will ABORT project creation & REMOVE all files
+   - If you're using a compatible version, you won't encounter any issues
+   - Using nvm is recommended: nvm install 22 && nvm use 22
+
+Happy coding! 🚗✨
+`);
+
+rl.close();
+
 // Function to setup Strapi integration
 function setupStrapiIntegration() {
+  // Check Node.js version compatibility first
+  if (!checkNodeVersion()) {
+    console.error(
+      "Cannot proceed with Strapi integration due to incompatible Node.js version."
+    );
+    console.error(
+      "The project structure has been created, but Strapi integration might not work correctly."
+    );
+    console.error(
+      "Please use a compatible Node.js version (>=18.0.0 <=22.x.x) to continue working with this project."
+    );
+
+    // We're not cleaning up here since the user might want to keep the project structure
+    // But we'll warn them and exit to prevent further issues
+    process.exit(1);
+  }
+
   // Install axios for API calls in frontend
   try {
     process.chdir("frontend");
@@ -826,9 +1151,17 @@ A full-stack automotive website with Aurora GT-S showcase powered by Next.js and
 ${projectName}/
 ├── frontend/          # Next.js frontend application
 │   ├── src/
-│   │   ├── app/       # App Router pages
-│   │   ├── components/ # React components
-│   │   └── lib/       # API client and utilities
+│   │   ├── app/           # App Router pages
+│   │   ├── components/    # React components (UI, features, layout, etc.)
+│   │   ├── contexts/      # React contexts
+│   │   ├── hooks/         # Custom React hooks
+│   │   ├── lib/           # API clients and utilities
+│   │   ├── services/      # Service layer for external APIs
+│   │   ├── stores/        # State management (Zustand, Jotai)
+│   │   ├── types/         # TypeScript type definitions
+│   │   └── utils/         # Helper functions
+│   ├── public/            # Static assets
+│   ├── tests/             # Test files (unit, integration, e2e)
 │   └── package.json
 ├── backend/           # Strapi CMS backend
 │   ├── src/
@@ -891,6 +1224,25 @@ To make the Aurora GT-S showcase dynamic, create these content types in Strapi:
 - \`npm run dev:backend\` - Start only backend
 - \`npm run build\` - Build frontend for production
 
+## Frontend Structure
+
+The frontend follows a comprehensive, well-organized structure:
+
+### Key directories:
+- **components/**: UI components separated by type (ui, features, layout)
+- **hooks/**: Custom React hooks for reusable logic
+- **lib/**: Utilities, API clients, and shared functions
+- **contexts/**: React Context providers
+- **stores/**: State management with Zustand and Jotai
+- **utils/**: Helper functions and formatters
+
+### Installed libraries:
+- **State Management**: Zustand, Jotai, React Query
+- **UI Components**: Tailwind CSS, CVA, Radix UI primitives
+- **Forms**: React Hook Form, Zod validation
+- **API**: Axios, SWR, tRPC
+- **Testing**: Vitest, React Testing Library, Playwright
+
 ## Environment Variables
 
 ### Frontend (.env.local)
@@ -918,37 +1270,3 @@ Enjoy building your automotive showcase website! 🚗
 
   fs.writeFileSync(path.join(process.cwd(), "README.md"), readmeContent);
 }
-
-console.log("Full-stack setup complete!");
-console.log(`
-🎉 Your HyAct Website with Strapi CMS is ready!
-
-📁 Project Structure:
-   ${projectName}/
-   ├── frontend/     # Next.js app (Aurora GT-S showcase)
-   ├── backend/      # Strapi CMS
-   └── package.json  # Root scripts
-
-🚀 Quick Start:
-1. cd ${projectName}
-2. npm run dev
-
-🌐 Access your applications:
-   - Frontend: http://localhost:3000
-   - Strapi Admin: http://localhost:1337/admin
-
-📝 Next Steps:
-   - Set up your Strapi admin account
-   - Create content types for dynamic data
-   - Customize the Aurora GT-S showcase
-   - Check README.md for detailed instructions
-
-⚠️  Node.js Compatibility:
-   - Strapi requires Node.js >=18.0.0 <=22.x.x
-   - If you're using Node.js v23+, install backend dependencies manually
-   - Consider using nvm to switch Node versions: nvm use 22
-
-Happy coding! 🚗✨
-`);
-
-rl.close();
