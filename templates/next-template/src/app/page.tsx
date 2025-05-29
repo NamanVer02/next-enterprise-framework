@@ -1,164 +1,210 @@
 /* eslint-disable react/no-unescaped-entities */
+"use client";
+
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 
+// NOTE: If you see a linter error about 'react' not found, make sure to run 'npm install react' in your project.
+
 export default function HomePage() {
-  const features = [
-    {
-      title: "Tri-Motor Powertrain",
-      description:
-        "Revolutionary tri-motor configuration delivering 1,200 horsepower with instant torque distribution to all four wheels.",
-    },
-    {
-      title: "Autonomous Driving Level 4",
-      description:
-        "Advanced AI-powered self-driving system with 12 cameras, LiDAR, and radar sensors for complete autonomy.",
-    },
-    {
-      title: "Adaptive Interior",
-      description:
-        "Premium cabin with sustainable materials, 22-speaker sound system, and ambient lighting that adapts to driving conditions.",
-    },
-    {
-      title: "Active Aerodynamics",
-      description:
-        "Intelligent aerodynamic elements that adjust in real-time for optimal performance and efficiency.",
-    },
-    {
-      title: "Ultra-Fast Charging",
-      description:
-        "800V architecture enables 10-80% charging in just 18 minutes with our Apex Supercharger network.",
-    },
-    {
-      title: "5-Star Safety",
-      description:
-        "Industry-leading safety with carbon fiber crumple zones and predictive collision avoidance.",
-    },
-  ];
+  // Hardcoded fallback data
+  const fallback = {
+    features: [
+      {
+        title: "Tri-Motor Powertrain",
+        description:
+          "Revolutionary tri-motor configuration delivering 1,200 horsepower with instant torque distribution to all four wheels.",
+      },
+      {
+        title: "Autonomous Driving Level 4",
+        description:
+          "Advanced AI-powered self-driving system with 12 cameras, LiDAR, and radar sensors for complete autonomy.",
+      },
+      {
+        title: "Adaptive Interior",
+        description:
+          "Premium cabin with sustainable materials, 22-speaker sound system, and ambient lighting that adapts to driving conditions.",
+      },
+      {
+        title: "Active Aerodynamics",
+        description:
+          "Intelligent aerodynamic elements that adjust in real-time for optimal performance and efficiency.",
+      },
+      {
+        title: "Ultra-Fast Charging",
+        description:
+          "800V architecture enables 10-80% charging in just 18 minutes with our Apex Supercharger network.",
+      },
+      {
+        title: "5-Star Safety",
+        description:
+          "Industry-leading safety with carbon fiber crumple zones and predictive collision avoidance.",
+      },
+    ],
+    specifications: [
+      {
+        label: "Top Speed",
+        value: "200 mph",
+        description: "Electronically limited",
+      },
+      { label: "Range", value: "516 miles", description: "EPA estimated" },
+      {
+        label: "Acceleration",
+        value: "0-60 in 2.1s",
+        description: "With launch control",
+      },
+      {
+        label: "Autopilot",
+        value: "Level 4",
+        description: "Full Self-Driving",
+      },
+    ],
+    cars: [
+      {
+        name: "Aurora GT-S Base",
+        price: "$129,900",
+        description: "The essential Aurora GT-S experience",
+        features: [
+          "Dual-Motor AWD (800 HP)",
+          "450-mile range",
+          "17-inch touchscreen",
+          "Premium audio system",
+          "Glass panoramic roof",
+          "Autopilot included",
+          "Over-the-air updates",
+          "8-year battery warranty",
+        ],
+      },
+      {
+        name: "Aurora GT-S Performance",
+        price: "$149,900",
+        description: "Maximum performance configuration",
+        features: [
+          "Tri-Motor AWD (1,200 HP)",
+          "516-mile range",
+          "Carbon fiber package",
+          "Track mode",
+          "Performance brakes",
+          "Adaptive suspension",
+          "Sport seats",
+          "Enhanced autopilot",
+        ],
+        popular: true,
+      },
+      {
+        name: "Aurora GT-S First Edition",
+        price: "$189,900",
+        description: "Limited production luxury variant",
+        features: [
+          "All Performance features",
+          "Exclusive paint options",
+          "22-speaker premium audio",
+          "Massaging seats",
+          "Full self-driving capability",
+          "Exclusive interior materials",
+          "Numbered badge",
+          "Concierge service",
+        ],
+      },
+    ],
+    companystats: [
+      {
+        number: "25+",
+        label: "Industry Awards",
+        description: "2024 recognition",
+      },
+      { number: "500K+", label: "Pre-Orders", description: "Global demand" },
+      { number: "50+", label: "Countries", description: "Worldwide launch" },
+      {
+        number: "12",
+        label: "Manufacturing",
+        description: "Global facilities",
+      },
+    ],
+    testimonials: [
+      {
+        name: "James Morrison",
+        role: "Automotive Journalist, Motor Trend",
+        image:
+          "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
+        quote:
+          "The Aurora GT-S doesn&apos;t just redefine electric performance—it obliterates every preconception about what an EV can be. This is automotive nirvana.",
+      },
+      {
+        name: "Dr. Sarah Chen",
+        role: "Technology Executive, Former Tesla",
+        image:
+          "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
+        quote:
+          "After two decades in automotive technology, the Aurora GT-S represents the single greatest leap forward I&apos;ve witnessed. The integration is flawless.",
+      },
+      {
+        name: "Michael Rodriguez",
+        role: "Professional Racing Driver, Formula E",
+        image:
+          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
+        quote:
+          "In 15 years of professional racing, nothing has prepared me for the Aurora GT-S. The precision, the power, the control—it&apos;s in a league of its own.",
+      },
+    ],
+    galleryimages: [
+      {
+        url: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        title: "Exterior Design",
+        description: "Aerodynamic perfection",
+      },
+      {
+        url: "https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        title: "Interior Luxury",
+        description: "Premium materials and craftsmanship",
+      },
+      {
+        url: "https://images.unsplash.com/photo-1571068316344-75bc76f77890?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        title: "Performance Mode",
+        description: "Track-ready configuration",
+      },
+      {
+        url: "https://images.unsplash.com/photo-1493238792000-8113da705763?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        title: "Charging Technology",
+        description: "Ultra-fast charging capability",
+      },
+    ],
+  };
 
-  const specifications = [
-    {
-      label: "Top Speed",
-      value: "200 mph",
-      description: "Electronically limited",
-    },
-    { label: "Range", value: "516 miles", description: "EPA estimated" },
-    {
-      label: "Acceleration",
-      value: "0-60 in 2.1s",
-      description: "With launch control",
-    },
-    { label: "Autopilot", value: "Level 4", description: "Full Self-Driving" },
-  ];
+  const [features, setFeatures] = useState(fallback.features);
+  const [specifications, setSpecifications] = useState(fallback.specifications);
+  const [pricingPackages, setPricingPackages] = useState(fallback.cars);
+  const [companyStats, setCompanyStats] = useState(fallback.companystats);
+  const [testimonials, setTestimonials] = useState(fallback.testimonials);
+  const [galleryImages, setGalleryImages] = useState(fallback.galleryimages);
 
-  const pricingPackages = [
-    {
-      name: "Aurora GT-S Base",
-      price: "$129,900",
-      description: "The essential Aurora GT-S experience",
-      features: [
-        "Dual-Motor AWD (800 HP)",
-        "450-mile range",
-        "17-inch touchscreen",
-        "Premium audio system",
-        "Glass panoramic roof",
-        "Autopilot included",
-        "Over-the-air updates",
-        "8-year battery warranty",
-      ],
-    },
-    {
-      name: "Aurora GT-S Performance",
-      price: "$149,900",
-      description: "Maximum performance configuration",
-      features: [
-        "Tri-Motor AWD (1,200 HP)",
-        "516-mile range",
-        "Carbon fiber package",
-        "Track mode",
-        "Performance brakes",
-        "Adaptive suspension",
-        "Sport seats",
-        "Enhanced autopilot",
-      ],
-      popular: true,
-    },
-    {
-      name: "Aurora GT-S First Edition",
-      price: "$189,900",
-      description: "Limited production luxury variant",
-      features: [
-        "All Performance features",
-        "Exclusive paint options",
-        "22-speaker premium audio",
-        "Massaging seats",
-        "Full self-driving capability",
-        "Exclusive interior materials",
-        "Numbered badge",
-        "Concierge service",
-      ],
-    },
-  ];
-
-  const companyStats = [
-    {
-      number: "25+",
-      label: "Industry Awards",
-      description: "2024 recognition",
-    },
-    { number: "500K+", label: "Pre-Orders", description: "Global demand" },
-    { number: "50+", label: "Countries", description: "Worldwide launch" },
-    { number: "12", label: "Manufacturing", description: "Global facilities" },
-  ];
-
-  const testimonials = [
-    {
-      name: "James Morrison",
-      role: "Automotive Journalist, Motor Trend",
-      image:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
-      quote:
-        "The Aurora GT-S doesn&apos;t just redefine electric performance—it obliterates every preconception about what an EV can be. This is automotive nirvana.",
-    },
-    {
-      name: "Dr. Sarah Chen",
-      role: "Technology Executive, Former Tesla",
-      image:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
-      quote:
-        "After two decades in automotive technology, the Aurora GT-S represents the single greatest leap forward I&apos;ve witnessed. The integration is flawless.",
-    },
-    {
-      name: "Michael Rodriguez",
-      role: "Professional Racing Driver, Formula E",
-      image:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
-      quote:
-        "In 15 years of professional racing, nothing has prepared me for the Aurora GT-S. The precision, the power, the control—it&apos;s in a league of its own.",
-    },
-  ];
-
-  const galleryImages = [
-    {
-      url: "https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      title: "Exterior Design",
-      description: "Aerodynamic perfection",
-    },
-    {
-      url: "https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      title: "Interior Luxury",
-      description: "Premium materials and craftsmanship",
-    },
-    {
-      url: "https://images.unsplash.com/photo-1571068316344-75bc76f77890?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      title: "Performance Mode",
-      description: "Track-ready configuration",
-    },
-    {
-      url: "https://images.unsplash.com/photo-1493238792000-8113da705763?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      title: "Charging Technology",
-      description: "Ultra-fast charging capability",
-    },
-  ];
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [f, s, c, cs, t, g] = await Promise.all([
+          fetch("http://localhost:1337/api/features").then((r) => r.json()),
+          fetch("http://localhost:1337/api/specifications").then((r) =>
+            r.json()
+          ),
+          fetch("http://localhost:1337/api/cars").then((r) => r.json()),
+          fetch("http://localhost:1337/api/companystats").then((r) => r.json()),
+          fetch("http://localhost:1337/api/testimonials").then((r) => r.json()),
+          fetch("http://localhost:1337/api/galleryimages").then((r) =>
+            r.json()
+          ),
+        ]);
+        if (f.data) setFeatures(f.data.map((item) => item));
+        if (s.data) setSpecifications(s.data.map((item) => item));
+        if (c.data) setPricingPackages(c.data.map((item) => item));
+        if (cs.data) setCompanyStats(cs.data.map((item) => item));
+        if (t.data) setTestimonials(t.data.map((item) => item));
+        if (g.data) setGalleryImages(g.data.map((item) => item));
+      } catch (e) {
+        // If Strapi is down, fallback data is already set
+      }
+    }
+    fetchData();
+  }, []);
 
   return (
     <div className="min-h-screen bg-white">
@@ -216,6 +262,18 @@ export default function HomePage() {
               </button>
               <button className="bg-blue-900 hover:bg-blue-800 text-white px-4 py-2 rounded text-sm font-medium transition-colors">
                 Configure
+              </button>
+              <button
+                onClick={async () => {
+                  const res = await fetch("/api/link-to-db", {
+                    method: "POST",
+                  });
+                  const data = await res.json();
+                  alert(data.message || "Done!");
+                }}
+                className="bg-blue-900 hover:bg-blue-800 text-white px-4 py-2 rounded text-sm font-medium transition-colors"
+              >
+                Link to DB
               </button>
             </div>
           </div>

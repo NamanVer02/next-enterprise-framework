@@ -5,6 +5,7 @@ const path = require("path");
 const fs = require("fs");
 const readline = require("readline");
 const process = require("process");
+const fetch = require("node-fetch");
 
 // Function to check Node.js version compatibility with Strapi requirements
 function checkNodeVersion() {
@@ -230,6 +231,22 @@ try {
     path.join(process.cwd(), "frontend/next.config.js")
   );
 
+  // Copy the link-to-db API route
+  try {
+    const apiRouteSrc = path.join(
+      __dirname,
+      "../templates/next-template/src/app/api/link-to-db/route.ts"
+    );
+    const apiRouteDestDir = path.join(
+      process.cwd(),
+      "frontend/src/app/api/link-to-db"
+    );
+    fs.mkdirSync(apiRouteDestDir, { recursive: true });
+    fs.copyFileSync(apiRouteSrc, path.join(apiRouteDestDir, "route.ts"));
+  } catch (error) {
+    console.error("Failed to copy link-to-db API route:", error);
+  }
+
   console.log("Car showcase page created successfully!");
 } catch (error) {
   console.error("Failed to create car showcase page:", error);
@@ -454,28 +471,9 @@ console.log("Setting up enhanced frontend structure...");
 enhanceFrontendStructure();
 
 console.log("Full-stack setup complete!");
-console.log(`
-🎉 Your HyAct Website with Strapi CMS is ready!
-
-🚀 Quick Start:
-1. cd ${projectName}
-2. npm run dev
-
-🌐 Access your applications:
-   - Frontend: http://localhost:3000
-   - Strapi Admin: http://localhost:1337/admin
-
-📝 Next Steps:
-   - Set up your Strapi admin account
-
-⚠️  Node.js Compatibility:
-   - Strapi REQUIRES Node.js >=18.0.0 <=22.x.x
-   - Running with Node.js v23+ will ABORT project creation & REMOVE all files
-   - If you're using a compatible version, you won't encounter any issues
-   - Using nvm is recommended: nvm install 22 && nvm use 22
-
-Happy coding! 🚗✨
-`);
+console.log(
+  `\nTo populate your Strapi database with sample data:\n1. Start your Strapi backend (cd backend && npm run develop)\n2. Start your Next.js frontend (cd frontend && npm run dev)\n3. Open http://localhost:3000 in your browser\n4. Click the 'Link to DB' button on the homepage\n`
+);
 
 rl.close();
 
