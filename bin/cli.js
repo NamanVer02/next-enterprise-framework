@@ -212,6 +212,18 @@ try {
     __dirname,
     "../templates/next-template/next.config.js"
   );
+  const templateAppReadmePath = path.join(
+    __dirname,
+    "../templates/README.md"
+  );
+  const templateFrontendReadmePath = path.join(
+    __dirname,
+    "../templates/next-template/README.md"
+  );
+  const templateBackendReadmePath = path.join(
+    __dirname,
+    "../templates/strapi-template/README.md"
+  );
 
   // Create necessary directories
   fs.mkdirSync(path.join(process.cwd(), "frontend/src/app"), {
@@ -228,6 +240,24 @@ try {
   fs.copyFileSync(
     templateNextConfigPath,
     path.join(process.cwd(), "frontend/next.config.js")
+  );
+
+  // Copy the readme.md from template
+  fs.copyFileSync(
+    templateAppReadmePath,
+    path.join(process.cwd(), "README.md")
+  );
+
+  // Copy the readme.md (frontend) from the template
+  fs.copyFileSync(
+    templateFrontendReadmePath,
+    path.join(process.cwd(), "frontend/README.md")
+  );
+
+  // Copy the readme.md (backend) from the template 
+  fs.copyFileSync(
+    templateBackendReadmePath,
+    path.join(process.cwd(), "backend/README.md")
   );
 
   // Copy the link-to-db API route
