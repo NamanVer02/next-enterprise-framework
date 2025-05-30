@@ -178,6 +178,9 @@ export default function HomePage() {
   const [testimonials, setTestimonials] = useState(fallback.testimonials);
   const [galleryImages, setGalleryImages] = useState(fallback.galleryimages);
 
+  // Add loading state for Link to DB
+  const [isLinkingToDb, setIsLinkingToDb] = useState(false);
+
   useEffect(() => {
     async function fetchData() {
       try {
@@ -208,6 +211,37 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Loading Overlay */}
+      {isLinkingToDb && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50">
+          <div className="flex flex-col items-center">
+            <svg
+              className="animate-spin h-12 w-12 text-white mb-4"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+              ></path>
+            </svg>
+            <span className="text-white text-lg font-semibold">
+              Linking to database...
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Navigation */}
       <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-sm z-50 border-b border-gray-200">
         <div className="container mx-auto px-6 py-4">
@@ -265,11 +299,18 @@ export default function HomePage() {
               </button>
               <button
                 onClick={async () => {
-                  const res = await fetch("/api/link-to-db", {
-                    method: "POST",
-                  });
-                  const data = await res.json();
-                  alert(data.message || "Done!");
+                  setIsLinkingToDb(true);
+                  try {
+                    const res = await fetch("/api/link-to-db", {
+                      method: "POST",
+                    });
+                    const data = await res.json();
+                    alert(data.message || "Done!");
+                  } catch (e) {
+                    alert("An error occurred while linking to DB.");
+                  } finally {
+                    setIsLinkingToDb(false);
+                  }
                 }}
                 className="bg-blue-900 hover:bg-blue-800 text-white px-4 py-2 rounded text-sm font-medium transition-colors"
               >
