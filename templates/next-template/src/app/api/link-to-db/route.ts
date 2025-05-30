@@ -487,7 +487,14 @@ const collections: any[] = [
 ];
 
 export async function POST() {
-  console.log("[link-to-db] Starting DB integration (car collection only)...");
+  type CollectionResult = {
+    collection: string;
+    success: boolean;
+    entries?: number;
+    error?: string;
+    warning?: string;
+  };
+  console.log("[link-to-db] Starting DB integration (all collections)...");
   const { jwt, error } = await getSuperAdminJWT();
   if (error) {
     console.error("[link-to-db] Super admin JWT error:", error);
@@ -502,85 +509,102 @@ export async function POST() {
     });
   }
 
-  // Only work with the 'car' collection
-  const carCol = collections.find((col) => col.singular === "car");
-  if (!carCol) {
-    console.error(
-      "[link-to-db] 'car' collection definition not found in template."
-    );
-    return NextResponse.json({
-      message: "Car collection not found.",
-      success: false,
-    });
-  }
+  const results: CollectionResult[] = [];
 
-  // 1. Create the car collection
-  console.log(
-    `[link-to-db][CAR] Creating/checking collection: ${carCol.plural}`
-  );
-  const createdType = await ensureCollectionType(jwt, carCol);
-  if (createdType) {
-    console.log(`✅ [CAR] Collection '${carCol.plural}' created/exists.`);
-  } else {
-    console.error(
-      `❌ [CAR] Failed to create/access collection: ${carCol.plural}`
-    );
-    return NextResponse.json({
-      message: `Failed to create/access car collection.`,
-      success: false,
-    });
-  }
-
-  // Wait for Strapi to reload the new collection
-  console.log(
-    "[link-to-db][CAR] Waiting for Strapi to reload collection (5s)..."
-  );
-  await new Promise((resolve) => setTimeout(resolve, 5000));
-
-  // 2. Enable public CRUD permissions for car
-  console.log(
-    `[link-to-db][CAR] Enabling public CRUD permissions for: ${carCol.singular}`
-  );
-  const enabled = await enablePublicCrudPermissions(jwt, carCol.singular);
-  if (enabled) {
+  for (const col of collections) {
+    // 1. Create the collection
     console.log(
-      `✅ [CAR] Public 'find'/'findOne'/'create' permissions enabled for: ${carCol.plural}`
+      `\n==============================\n[link-to-db][${col.displayName.toUpperCase()}] Creating/checking collection: ${
+        col.plural
+      }\n==============================`
     );
-  } else {
-    console.error(
-      `❌ [CAR] Failed to enable public permissions for: ${carCol.plural}`
-    );
-    return NextResponse.json({
-      message: `Failed to enable public permissions for car.`,
-      success: false,
-    });
-  }
+    const createdType = await ensureCollectionType(jwt, col);
+    if (createdType) {
+      console.log(
+        `✅ [${col.displayName}] Collection '${col.plural}' created/exists.`
+      );
+    } else {
+      console.error(
+        `❌ [${col.displayName}] Failed to create/access collection: ${col.plural}`
+      );
+      results.push({
+        collection: col.plural,
+        success: false,
+        error: "Failed to create/access collection.",
+      });
+      continue;
+    }
 
-  // Wait for Strapi to reload permissions
-  console.log(
-    "[link-to-db][CAR] Waiting for Strapi to reload permissions (10s)..."
-  );
-  await new Promise((resolve) => setTimeout(resolve, 10000));
-
-  // 3. Seed data for car collection as Public (unauthenticated)
-  console.log(
-    `[link-to-db][CAR] Seeding data for collection (public): ${carCol.plural}`
-  );
-  const createdEntries = await createEntriesPublic(
-    carCol.plural,
-    carCol.entries
-  );
-  if (createdEntries > 0) {
+    // Wait for Strapi to reload the new collection
     console.log(
-      `✅ [CAR] Collection '${carCol.plural}': ${createdEntries} entries created.`
+      `[link-to-db][${col.displayName}] Waiting for Strapi to reload collection (5s)...`
     );
-  } else {
-    console.warn(`⚠️  [CAR] No new entries created for: ${carCol.plural}`);
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
+    // 2. Enable public CRUD permissions
+    console.log(
+      `[link-to-db][${col.displayName}] Enabling public CRUD permissions for: ${col.singular}`
+    );
+    const enabled = await enablePublicCrudPermissions(jwt, col.singular);
+    if (enabled) {
+      console.log(
+        `✅ [${col.displayName}] Public 'find'/'findOne'/'create' permissions enabled for: ${col.plural}`
+      );
+    } else {
+      console.error(
+        `❌ [${col.displayName}] Failed to enable public permissions for: ${col.plural}`
+      );
+      results.push({
+        collection: col.plural,
+        success: false,
+        error: "Failed to enable public permissions.",
+      });
+      continue;
+    }
+
+    // Wait for Strapi to reload permissions
+    console.log(
+      `[link-to-db][${col.displayName}] Waiting for Strapi to reload permissions (10s)...`
+    );
+    await new Promise((resolve) => setTimeout(resolve, 10000));
+
+    // 3. Seed data for collection as Public (unauthenticated)
+    console.log(
+      `[link-to-db][${col.displayName}] Seeding data for collection (public): ${col.plural}`
+    );
+    const createdEntries = await createEntriesPublic(col.plural, col.entries);
+    if (createdEntries > 0) {
+      console.log(
+        `✅ [${col.displayName}] Collection '${col.plural}': ${createdEntries} entries created.`
+      );
+      results.push({
+        collection: col.plural,
+        success: true,
+        entries: createdEntries,
+      });
+    } else {
+      console.warn(
+        `⚠️  [${col.displayName}] No new entries created for: ${col.plural}`
+      );
+      results.push({
+        collection: col.plural,
+        success: true,
+        entries: 0,
+        warning: "No new entries created.",
+      });
+    }
+
+    console.log(
+      `[link-to-db][${col.displayName}] DB integration for this collection complete!`
+    );
   }
 
-  console.log("[link-to-db][CAR] DB integration complete!");
+  console.log(
+    "\n==============================\n[link-to-db] DB integration complete for all collections!\n==============================\n"
+  );
   return NextResponse.json({
-    message: "DB integration complete! (car collection only)",
-    success: true,
+    message: "DB integration complete for all collections!",
+    results,
+    success: results.every((r) => r.success),
   });
 }

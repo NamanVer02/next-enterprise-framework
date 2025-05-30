@@ -5,7 +5,6 @@ const path = require("path");
 const fs = require("fs");
 const readline = require("readline");
 const process = require("process");
-const fetch = require("node-fetch");
 
 // Function to check Node.js version compatibility with Strapi requirements
 function checkNodeVersion() {
@@ -15,17 +14,16 @@ function checkNodeVersion() {
 
   // Strapi requires Node.js >=18.0.0 <=22.x.x
   if (majorVersion < 18 || majorVersion > 22) {
-    console.error(`
-⚠️  Node.js Version Error ⚠️
-You are running Node.js ${currentVersion}
-Strapi requires Node.js >=18.0.0 <=22.x.x
-
-Please install a compatible Node.js version to use create-hyact-app.
-Suggestion: Install nvm (Node Version Manager) and run:
-  nvm install 22
-  nvm use 22
-  npx create-hyact-website my-website
-`);
+    console.error(`\n\x1b[41m⚠️  Node.js Version Error ⚠️\x1b[0m\n`);
+    console.error(`You are running Node.js ${currentVersion}`);
+    console.error(`Strapi requires Node.js >=18.0.0 <=22.x.x\n`);
+    console.error(
+      `Please install a compatible Node.js version to use create-hyact-app.`
+    );
+    console.log(`\nSuggestion: Install nvm (Node Version Manager) and run:`);
+    console.log(`  nvm install 22`);
+    console.log(`  nvm use 22`);
+    console.log(`  npx create-hyact-website my-website\n`);
     return false;
   }
   return true;
@@ -59,8 +57,8 @@ const rl = readline.createInterface({
 const projectName = process.argv[2];
 
 if (!projectName) {
-  console.error("Please provide a project name");
-  console.log("Example: npx create-hyact-website my-website");
+  console.error("\n\x1b[41m❌ Please provide a project name\x1b[0m\n");
+  console.log("Example: npx create-hyact-website my-website\n");
   process.exit(1);
 }
 
@@ -70,8 +68,9 @@ if (!checkNodeVersion()) {
 }
 
 console.log(
-  `Creating a new HyAct Website with Strapi CMS in ${projectName}...`
+  `\n==============================\n🚀 \x1b[1mCreating a new HyAct Website with Strapi CMS\x1b[0m\n==============================\n`
 );
+console.log(`Project: \x1b[36m${projectName}\x1b[0m\n`);
 
 // Store the absolute path to the project directory for potential cleanup
 const projectPath = path.resolve(process.cwd(), projectName);
@@ -80,7 +79,7 @@ const projectPath = path.resolve(process.cwd(), projectName);
 fs.mkdirSync(projectName, { recursive: true });
 process.chdir(projectPath);
 
-console.log("Setting up frontend (Next.js)...");
+console.log("\n--- [1/6] Setting up frontend (Next.js)...\n");
 // Create Next.js app in frontend folder
 try {
   execSync(
@@ -93,7 +92,7 @@ try {
   process.exit(1);
 }
 
-console.log("Setting up backend (Strapi CMS)...");
+console.log("\n--- [2/6] Setting up backend (Strapi CMS)...\n");
 // Create Strapi app in backend folder
 let usingManualBackend = false;
 
@@ -201,8 +200,8 @@ fs.writeFileSync(
   nextConfigContent
 );
 
+console.log("\n--- [3/6] Creating car showcase page...\n");
 // Copy template files to frontend
-console.log("Creating car showcase page...");
 try {
   // Copy the car page from template instead of hardcoding it
   const templateCarPagePath = path.join(
@@ -247,14 +246,14 @@ try {
     console.error("Failed to copy link-to-db API route:", error);
   }
 
-  console.log("Car showcase page created successfully!");
+  console.log("\n✅ Car showcase page created successfully!\n");
 } catch (error) {
   console.error("Failed to create car showcase page:", error);
   process.exit(1);
 }
 
 // Create additional frontend structure
-console.log("Setting up frontend structure...");
+console.log("\n--- [4/6] Setting up frontend structure...\n");
 const frontendDirectories = [
   "frontend/src/components",
   "frontend/src/types",
@@ -296,7 +295,7 @@ frontendDirectories.forEach((dir) => {
 });
 
 // Setup Strapi integration
-console.log("Setting up Strapi CMS integration...");
+console.log("\n--- [5/6] Setting up Strapi CMS integration...\n");
 setupStrapiIntegration();
 
 // Function to enhance frontend structure with additional dependencies and examples
@@ -463,16 +462,18 @@ function enhanceFrontendStructure() {
     }
   });
 
-  console.log("Enhanced frontend structure completed!");
+  console.log("\n✅ Enhanced frontend structure completed!\n");
 }
 
 // Now call the enhanceFrontendStructure function
-console.log("Setting up enhanced frontend structure...");
+console.log("\n--- [6/6] Setting up enhanced frontend structure...\n");
 enhanceFrontendStructure();
 
-console.log("Full-stack setup complete!");
 console.log(
-  `\nTo populate your Strapi database with sample data:\n1. Start your Strapi backend (cd backend && npm run develop)\n2. Start your Next.js frontend (cd frontend && npm run dev)\n3. Open http://localhost:3000 in your browser\n4. Click the 'Link to DB' button on the homepage\n`
+  "\n==============================\n�� \x1b[32mFull-stack setup complete!\x1b[0m 🎉\n==============================\n"
+);
+console.log(
+  `\n\x1b[1mNext Steps:\x1b[0m\n\n  1. \x1b[36mStart your Strapi backend\x1b[0m: cd backend && npm run develop\n  2. \x1b[36mStart your Next.js frontend\x1b[0m: cd frontend && npm run dev\n  3. Open \x1b[4mhttp://localhost:3000\x1b[0m in your browser\n  4. Click the \x1b[33m'Link to DB'\x1b[0m button on the homepage\n`
 );
 
 rl.close();
