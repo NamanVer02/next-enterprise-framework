@@ -337,57 +337,57 @@ function enhanceFrontendStructure() {
 
     // Core dependencies
     execSync(
-      "npm install zustand @tanstack/react-query zod react-hook-form @hookform/resolvers date-fns",
+      "npm install zustand @tanstack/react-query zod react-hook-form @hookform/resolvers date-fns -s",
       { stdio: "inherit" }
     );
 
     // State management - enhanced
-    execSync("npm install jotai immer @tanstack/react-query-devtools", {
+    execSync("npm install jotai immer @tanstack/react-query-devtools -s", {
       stdio: "inherit",
     });
 
     // UI components and styling
     execSync(
-      "npm install class-variance-authority tailwind-merge clsx @radix-ui/react-slot",
+      "npm install class-variance-authority tailwind-merge clsx @radix-ui/react-slot -s",
       { stdio: "inherit" }
     );
 
     // Form and validation - enhanced
-    execSync("npm install @hookform/error-message", { stdio: "inherit" });
+    execSync("npm install @hookform/error-message -s", { stdio: "inherit" });
 
     // Internationalization
-    execSync("npm install next-intl next-i18n-router", { stdio: "inherit" });
+    execSync("npm install next-intl next-i18n-router -s", { stdio: "inherit" });
 
     // Auth and security
-    execSync("npm install next-auth @auth/core iron-session", {
+    execSync("npm install next-auth @auth/core iron-session -s", {
       stdio: "inherit",
     });
 
     // Performance and PWA
-    execSync("npm install next-pwa sharp", { stdio: "inherit" });
+    execSync("npm install next-pwa sharp -s", { stdio: "inherit" });
 
     // SEO and analytics
-    execSync("npm install schema-dts next-sitemap next-seo", {
+    execSync("npm install schema-dts next-sitemap next-seo -s", {
       stdio: "inherit",
     });
 
     // Testing dependencies
     execSync(
-      "npm install -D vitest @testing-library/react @testing-library/jest-dom @vitejs/plugin-react jsdom @testing-library/user-event msw",
+      "npm install -D vitest @testing-library/react @testing-library/jest-dom @vitejs/plugin-react jsdom @testing-library/user-event msw -s",
       { stdio: "inherit" }
     );
 
     // Development tools
     execSync(
-      "npm install -D @next/bundle-analyzer cross-env prettier eslint-config-prettier @typescript-eslint/eslint-plugin @typescript-eslint/parser",
+      "npm install -D @next/bundle-analyzer cross-env prettier eslint-config-prettier @typescript-eslint/eslint-plugin @typescript-eslint/parser -s",
       { stdio: "inherit" }
     );
 
     // Install missing features
-    execSync("npm install swr @trpc/server @trpc/client @trpc/react-query", {
+    execSync("npm install swr @trpc/server @trpc/client @trpc/react-query -s", {
       stdio: "inherit",
     });
-    execSync("npm install -D playwright", { stdio: "inherit" });
+    execSync("npm install -D playwright -s", { stdio: "inherit" });
 
     process.chdir("..");
     console.log("Dependencies installed successfully!");
@@ -503,7 +503,14 @@ console.log(
   "\n==============================\n�� \x1b[32mFull-stack setup complete!\x1b[0m 🎉\n==============================\n"
 );
 console.log(
-  `\n\x1b[1mNext Steps:\x1b[0m\n\n  1. \x1b[36mStart your Strapi backend\x1b[0m: cd backend && npm run develop\n  2. \x1b[36mStart your Next.js frontend\x1b[0m: cd frontend && npm run dev\n  3. Open \x1b[4mhttp://localhost:3000\x1b[0m in your browser\n  4. Click the \x1b[33m'Link to DB'\x1b[0m button on the homepage\n`
+  `\n\x1b[1mNext Steps:\x1b[0m\n\n` +
+  `  1. \x1b[36mStart your Next.js frontend\x1b[0m: cd frontend && npm run dev\n` +
+  `  2. \x1b[36mStart your Strapi backend\x1b[0m: cd backend && npm run develop\n` +
+  `  3. Complete the Strapi super admin signup at \x1b[4mhttp://localhost:1337/admin\x1b[0m\n` +
+  `  4. Access your frontend at \x1b[4mhttp://localhost:3000\x1b[0m\n` +
+  `  5. Access your backend at \x1b[4mhttp://localhost:1337\x1b[0m\n` +
+  `  6. Set \x1b[33mSTRAPI_ADMIN_EMAIL\x1b[0m and \x1b[33mSTRAPI_ADMIN_PASSWORD\x1b[0m in frontend/.env.local\n` +
+  `  7. Click the \x1b[33m'Link to DB'\x1b[0m button on the homepage to seed data and link to frontend\n`
 );
 
 rl.close();
@@ -530,7 +537,7 @@ function setupStrapiIntegration() {
   // Install axios for API calls in frontend
   try {
     process.chdir("frontend");
-    execSync("npm install axios", { stdio: "inherit" });
+    execSync("npm install axios -s", { stdio: "inherit" });
     process.chdir("..");
   } catch (error) {
     console.error("Failed to install axios in frontend");
@@ -607,7 +614,7 @@ function setupStrapiIntegration() {
 
   // Install concurrently for running both apps
   try {
-    execSync("npm install", { stdio: "inherit" });
+    execSync("npm install -s", { stdio: "inherit" });
   } catch (error) {
     console.error("Failed to install concurrently");
   }
