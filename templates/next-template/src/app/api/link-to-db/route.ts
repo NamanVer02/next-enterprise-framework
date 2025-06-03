@@ -204,7 +204,7 @@ async function isSuperAdmin(jwt) {
 }
 
 // Helper to wait for a collection type to become available
-async function waitForCollection(jwt, plural, maxWaitMs = 30000) {
+async function waitForCollection(jwt, plural, maxWaitMs = 180000) {
   const start = Date.now();
   while (Date.now() - start < maxWaitMs) {
     try {
