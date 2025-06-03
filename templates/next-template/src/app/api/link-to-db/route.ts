@@ -608,3 +608,70 @@ export async function POST() {
     success: results.every((r) => r.success),
   });
 }
+
+export async function GET() {
+  // Steps for each collection: create, wait, permissions, wait, seed
+  const steps: { label: string; collection: string; type: string }[] = [];
+  for (const col of collections) {
+    steps.push({
+      label: `Creating/checking collection: ${col.displayName}`,
+      collection: col.displayName,
+      type: "create",
+    });
+    steps.push({
+      label: `Waiting for Strapi to reload collection (5s): ${col.displayName}`,
+      collection: col.displayName,
+      type: "wait_collection",
+    });
+    steps.push({
+      label: `Enabling public permissions: ${col.displayName}`,
+      collection: col.displayName,
+      type: "permissions",
+    });
+    steps.push({
+      label: `Waiting for Strapi to reload permissions (10s): ${col.displayName}`,
+      collection: col.displayName,
+      type: "wait_permissions",
+    });
+    steps.push({
+      label: `Seeding data: ${col.displayName}`,
+      collection: col.displayName,
+      type: "seed",
+    });
+  }
+
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      for (let i = 0; i < steps.length; i++) {
+        // Simulate realistic delays
+        if (steps[i].type === "wait_collection") {
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+        } else if (steps[i].type === "wait_permissions") {
+          await new Promise((resolve) => setTimeout(resolve, 10000));
+        } else {
+          await new Promise((resolve) => setTimeout(resolve, 700));
+        }
+        const eventData = {
+          step: i + 1,
+          total: steps.length,
+          label: steps[i].label,
+          collection: steps[i].collection,
+          type: steps[i].type,
+        };
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify(eventData)}\n\n`)
+        );
+      }
+      controller.close();
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    },
+  });
+}

@@ -68,7 +68,7 @@ if (!checkNodeVersion()) {
 }
 
 console.log(
-  `\n==============================\n🚀 \x1b[1mCreating a new HyAct Website with Strapi CMS\x1b[0m\n==============================\n`
+  `\n==================================================\n🚀 \x1b[1mCreating a new HyAct Website with Strapi CMS\x1b[0m\n==================================================\n`
 );
 console.log(`Project: \x1b[36m${projectName}\x1b[0m\n`);
 
@@ -473,6 +473,13 @@ function enhanceFrontendStructure() {
     {
       src: path.join(__dirname, "../templates/next-template/src/lib/utils.ts"),
       dest: "frontend/src/lib/utils.ts",
+    },
+    {
+      src: path.join(
+        __dirname,
+        "../templates/next-template/src/components/ui/LinkToDbProgress.tsx"
+      ),
+      dest: "frontend/src/components/ui/LinkToDbProgress.tsx",
     },
   ];
 

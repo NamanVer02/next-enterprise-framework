@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-
+import LinkToDbProgress from "../components/ui/LinkToDbProgress";
 
 export default function HomePage() {
   // Hardcoded fallback data
@@ -206,6 +206,10 @@ export default function HomePage() {
     }
     fetchData();
   }, []);
+
+  if (isLinkingToDb) {
+    return <LinkToDbProgress />;
+  }
 
   return (
     <div className="min-h-screen bg-white">
