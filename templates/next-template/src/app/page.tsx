@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import LinkToDbProgress from "../components/ui/LinkToDbProgress";
 
 export default function HomePage() {
   // Hardcoded fallback data
@@ -208,42 +207,39 @@ export default function HomePage() {
   }, []);
 
   if (isLinkingToDb) {
-    return <LinkToDbProgress />;
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50">
+        <div className="flex flex-col items-center">
+          <svg
+            className="animate-spin h-12 w-12 text-white mb-4"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+            ></path>
+          </svg>
+          <span className="text-white text-lg font-semibold">
+            Linking to database...
+          </span>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Loading Overlay */}
-      {isLinkingToDb && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50">
-          <div className="flex flex-col items-center">
-            <svg
-              className="animate-spin h-12 w-12 text-white mb-4"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-              ></path>
-            </svg>
-            <span className="text-white text-lg font-semibold">
-              Linking to database...
-            </span>
-          </div>
-        </div>
-      )}
-
       {/* Navigation */}
       <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-sm z-50 border-b border-gray-200">
         <div className="container mx-auto px-6 py-4">
